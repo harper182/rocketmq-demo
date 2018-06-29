@@ -1,6 +1,11 @@
 # Introduction
 
 Tasking:
-* can publish and receive String message
-* can publish and receive composition object
-* consumer cluster will receive all message, but a single consumer only receive part of the them. 
+* 能发布和接收字符串消息
+* 能接收指定tag的字符串消息
+* 能发布和接收对象消息
+* 消费者集群可以收到所有消息，但每个消费者只接收一部分 
+* 如果消费者处理消息失败，它能再次接收到消息
+* 可以使用注解方式进行事件监听
+* 对同一个业务单据（如订单），可以尽量放在一个队列中。（尽量使消息有序消费）
+* 当事件增加了属性时，能够被再次消费。

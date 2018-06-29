@@ -27,6 +27,15 @@ repositories {
 dependencies {
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.apache.rocketmq:rocketmq-client:4.2.0');
+    compile('org.springframework:spring-messaging');
+    compile('com.fasterxml.jackson.core:jackson-databind');
+    /**
+     *<groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+
+     * <groupId>org.springframework</groupId>
+     <artifactId>spring-messaging</artifactId>
+     */
     compileOnly('org.projectlombok:lombok')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
