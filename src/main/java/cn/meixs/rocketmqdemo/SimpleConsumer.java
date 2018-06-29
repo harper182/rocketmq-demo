@@ -27,6 +27,7 @@ public class SimpleConsumer {
     private String namesrvAddr;
     private String topic;
     private String subExpression;
+    private int count;
 
     public SimpleConsumer(Class messageType, String namesrvAddr, String group, String topic, String subExpression) {
         this.messageType = messageType;
@@ -61,6 +62,10 @@ public class SimpleConsumer {
         log.info("consumer destroyed, {}", this.toString());
     }
 
+    public int getReceivedObjectCount() {
+        return count;
+    }
+
     protected class DefaultMessageListenerConcurrently implements MessageListenerConcurrently {
         public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
             for (MessageExt messageExt : msgs) {
@@ -79,6 +84,7 @@ public class SimpleConsumer {
 
     protected void handleMessage(Object object) {
         this.receivedObject = object;
+        this.count++;
     }
 
     Object getReceivedObject() {
