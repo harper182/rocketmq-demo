@@ -62,11 +62,8 @@ public class SimpleConsumer {
         log.info("consumer destroyed, {}", this.toString());
     }
 
-    public int getReceivedObjectCount() {
-        return count;
-    }
-
     protected class DefaultMessageListenerConcurrently implements MessageListenerConcurrently {
+
         public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
             for (MessageExt messageExt : msgs) {
                 log.debug("received msg: {}", messageExt);
@@ -89,6 +86,10 @@ public class SimpleConsumer {
 
     Object getReceivedObject() {
         return receivedObject;
+    }
+
+    int getReceivedObjectCount() {
+        return count;
     }
 
     private Object doConvertMessage(MessageExt messageExt) {
