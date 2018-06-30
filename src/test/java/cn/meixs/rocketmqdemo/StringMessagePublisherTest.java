@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,7 @@ public class StringMessagePublisherTest {
         producer = new SimpleProducer(NAMESRV_ADDR, GROUP);
         producer.init();
 
-        consumer = new SimpleConsumer(String.class, NAMESRV_ADDR, GROUP, TOPIC, TAG);
+        consumer = new SimpleConsumer(String.class, NAMESRV_ADDR, GROUP, Arrays.asList(new TopicInfo(TOPIC, TAG)));
         consumer.init();
     }
 
@@ -67,7 +68,7 @@ public class StringMessagePublisherTest {
         consumer.destroy(); //can not consumer the same group twice in a single process.
 
         String anotherTag = TAG + "1";
-        SimpleConsumer anotherConsumer = new SimpleConsumer(String.class, NAMESRV_ADDR, GROUP, TOPIC, TAG + "||" + anotherTag);
+        SimpleConsumer anotherConsumer = new SimpleConsumer(String.class, NAMESRV_ADDR, GROUP, Arrays.asList(new TopicInfo(TOPIC, TAG + "||" + anotherTag)));
         anotherConsumer.init();
         try {
             String message = "hello again";

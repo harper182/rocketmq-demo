@@ -5,7 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -26,7 +28,7 @@ public class DomainEventPublishTest {
         producer = new SimpleProducer(NAMESRV_ADDR, GROUP);
         producer.init();
 
-        consumer = new SimpleConsumer(DomainEvent.class, NAMESRV_ADDR, GROUP, TOPIC, TAG);
+        consumer = new SimpleConsumer(DomainEvent.class, NAMESRV_ADDR, GROUP, Arrays.asList(new TopicInfo(TOPIC, TAG)));
         consumer.init();
     }
 
@@ -59,7 +61,7 @@ public class DomainEventPublishTest {
     public void should_support_retry_when_event_consumer_failed() throws Exception {
         consumer.destroy();
 
-        FakeSimpleConsumer fakeSimpleConsumer = new FakeSimpleConsumer(DomainEvent.class, NAMESRV_ADDR, GROUP, TOPIC, TAG);
+        FakeSimpleConsumer fakeSimpleConsumer = new FakeSimpleConsumer(DomainEvent.class, NAMESRV_ADDR, GROUP, Arrays.asList(new TopicInfo(TOPIC, TAG)));
         fakeSimpleConsumer.init();
         try {
             DomainEvent event = new DomainEvent("1", 123L, new Date(), new BigDecimal("12.88"), new BusinessNo("asdfafe"));
@@ -73,12 +75,31 @@ public class DomainEventPublishTest {
         }
     }
 
-    public static class FakeSimpleConsumer extends SimpleConsumer {
-        FakeSimpleConsumer(Class messageType, String namesrvAddr, String group, String topic, String subExpression) {
-            super(messageType, namesrvAddr, group, topic, subExpression);
-        }
+    @Test
+    public void should_support_subscribe_multiple_topic() throws Exception {
+        consumer.destroy();
 
+        consumer = new SimpleConsumer(DomainEvent.class, NAMESRV_ADDR, GROUP,
+                            Arrays.asList(
+                                new TopicInfo(TOPIC, TAG),
+                                new TopicInfo(TOPIC+"1", TAG)));
+        consumer.init();
+
+        DomainEvent event = new DomainEvent("1", 123L, new Date(), new BigDecimal("12.88"), new BusinessNo("asdfafe"));
+        producer.send(TOPIC + ":" + TAG, event);
+        producer.send(TOPIC + "1:" + TAG, event);
+
+        TimeUnit.SECONDS.sleep(WAIT_SECONDS);
+
+        assertEquals(2, consumer.getReceivedObjectCount());
+    }
+
+    public static class FakeSimpleConsumer extends SimpleConsumer {
         private int i = 0;
+
+        public FakeSimpleConsumer(Class messageType, String namesrvAddr, String group, List<TopicInfo> topicInfos) {
+            super(messageType, namesrvAddr, group, topicInfos);
+        }
 
         @Override
         protected void handleMessage(Object object) {

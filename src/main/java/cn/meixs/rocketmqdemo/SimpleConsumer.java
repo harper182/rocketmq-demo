@@ -25,29 +25,28 @@ public class SimpleConsumer {
     private Class messageType;
     private String group;
     private String namesrvAddr;
-    private String topic;
-    private String subExpression;
+    private List<TopicInfo> topicInfos;
     private int count;
 
-    public SimpleConsumer(Class messageType, String namesrvAddr, String group, String topic, String subExpression) {
+    public SimpleConsumer(Class messageType, String namesrvAddr, String group, List<TopicInfo> topicInfos) {
         this.messageType = messageType;
         this.group = group;
         this.namesrvAddr = namesrvAddr;
-        this.topic = topic;
-        this.subExpression = subExpression;
+        this.topicInfos = topicInfos;
     }
 
     public synchronized void init() throws Exception {
         if (Objects.isNull(consumer)) {
             Assert.notNull(group, "group cannot be null");
             Assert.notNull(namesrvAddr, "namesrvAddr cannot be null");
-            Assert.notNull(topic, "topic cannot be null");
-            Assert.notNull(subExpression, "subExpression cannot be null");
+            Assert.notEmpty(topicInfos, "topicInfos cannot be null");
 
             DefaultMQPushConsumer dummyConsumer = new DefaultMQPushConsumer(group);
             dummyConsumer.setNamesrvAddr(namesrvAddr);
             dummyConsumer.setMessageModel(MessageModel.CLUSTERING);
-            dummyConsumer.subscribe(topic, subExpression);
+            for (TopicInfo topicInfo : topicInfos) {
+                dummyConsumer.subscribe(topicInfo.getTopic(), topicInfo.getSubExpression());
+            }
             dummyConsumer.setMessageListener(new DefaultMessageListenerConcurrently());
             dummyConsumer.start();
 
@@ -93,6 +92,7 @@ public class SimpleConsumer {
     }
 
     private Object doConvertMessage(MessageExt messageExt) {
+
         if (Objects.equals(messageType, MessageExt.class)) {
             return messageExt;
         } else {
