@@ -23,6 +23,6 @@ public class OrderService {
         order.pay(price);
         repository.save(order);
 
-        eventDispatcher.dispatch(order.getEvents());
+        eventDispatcher.saveAndDispatch(order.getEvents());
     }
 }

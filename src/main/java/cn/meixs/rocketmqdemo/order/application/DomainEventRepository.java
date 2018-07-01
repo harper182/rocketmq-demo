@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface DomainEventRepository {
     void save(List<DomainEvent> events);
+
+    void updateSentStatus(DomainEvent event);
+
+    List<DomainEvent> findToBeSentEvents();
 }

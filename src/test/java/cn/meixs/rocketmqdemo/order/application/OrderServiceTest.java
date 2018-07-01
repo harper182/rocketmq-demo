@@ -25,6 +25,6 @@ public class OrderServiceTest {
         service.pay("1111", new BigDecimal("100"));
 
         assertEquals(OrderStatus.PAID, order.getStatus());
-        verify(dispatcher, times(1)).dispatch(anyList());
+        verify(dispatcher, times(1)).saveAndDispatch(anyList());
     }
 }

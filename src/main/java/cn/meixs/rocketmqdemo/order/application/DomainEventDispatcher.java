@@ -6,5 +6,7 @@ import java.util.List;
 
 
 public interface DomainEventDispatcher {
-    void dispatch(List<DomainEvent> events);
+    void saveAndDispatch(List<DomainEvent> events);
+
+    void dispatch(DomainEvent event);
 }

@@ -12,4 +12,14 @@ public class DomainEventRepositoryImpl implements DomainEventRepository {
     public void save(List<DomainEvent> events) {
 
     }
+
+    @Override
+    public void updateSentStatus(DomainEvent event) {
+
+    }
+
+    @Override
+    public List<DomainEvent> findToBeSentEvents() {
+        return null;
+    }
 }

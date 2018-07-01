@@ -31,17 +31,22 @@ public class DomainEventDispatcherImpl implements DomainEventDispatcher {
     }
 
     @Override
-    public void dispatch(List<DomainEvent> events) {
+    public void saveAndDispatch(List<DomainEvent> events) {
         repository.save(events);
 
         dispatchEvents(events);
+    }
+
+    @Override
+    public void dispatch(DomainEvent event) {
+        simpleProducer.send(event.getTopic() + ":" + event.getTag(), event);
     }
 
     @Async
     public void dispatchEvents(List<DomainEvent> events) {
         //异步把消息发送出去
         for (DomainEvent event : events) {
-            simpleProducer.send(event.getTopic() + ":" + event.getTag(), event);
+            dispatch(event);
         }
     }
 
