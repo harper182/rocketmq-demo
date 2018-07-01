@@ -3,6 +3,7 @@ package cn.meixs.rocketmqdemo.mq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
@@ -170,7 +171,7 @@ public class SimpleProducer extends AbstractMessageSendingTemplate<String> {
         return message;
     }
 
-    public void destroy() throws Exception {
+    public void destroy() {
         if (Objects.nonNull(producer)) {
             producer.shutdown();
         }
@@ -178,7 +179,7 @@ public class SimpleProducer extends AbstractMessageSendingTemplate<String> {
         log.info("producer destroyed, {}", this.toString());
     }
 
-    public synchronized void init() throws Exception {
+    public synchronized void init() {
         if (producer == null) {
             Assert.notNull(producerGroup, "producerGroup cannot be null");
             Assert.notNull(namesrvAddr, "namesrvAddr cannot be null");
@@ -186,7 +187,12 @@ public class SimpleProducer extends AbstractMessageSendingTemplate<String> {
             producer = new DefaultMQProducer(producerGroup);
             producer.setNamesrvAddr(namesrvAddr);
 
-            producer.start();
+            try {
+                producer.start();
+            } catch (MQClientException e) {
+                log.error("failed to start RocketMQ producer", e);
+                throw new RuntimeException("failed to start RocketMQ producer");
+            }
         }
     }
 

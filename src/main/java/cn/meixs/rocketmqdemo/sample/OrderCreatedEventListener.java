@@ -25,7 +25,7 @@ public class OrderCreatedEventListener implements RocketMQListener<OrderCreatedE
     }
 
     public String getTopic() {
-        return "ORDER";
+        return "MYORDER";
     }
 
     @Override
