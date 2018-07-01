@@ -1,8 +1,6 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.sample;
 
 import cn.meixs.rocketmqdemo.mq.SimpleProducer;
-import cn.meixs.rocketmqdemo.sample.OrderCreatedEvent;
-import cn.meixs.rocketmqdemo.sample.OrderCreatedEventListener;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;

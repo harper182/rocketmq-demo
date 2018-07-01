@@ -6,8 +6,6 @@ import cn.meixs.rocketmqdemo.order.domain.OrderPaidEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.annotation.Annotation;
-
 @Service
 @RocketMQMessageListener
 public class OrderPaidEventListener implements RocketMQListener<OrderPaidEvent>{
