@@ -1,7 +1,5 @@
 package cn.meixs.rocketmqdemo;
 
-import cn.meixs.rocketmqdemo.domain.event.BusinessNo;
-import cn.meixs.rocketmqdemo.domain.event.SampleDomainEvent;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -50,7 +48,7 @@ public class DomainEventPublishTest {
             SampleDomainEvent event = getDomainEvent();
             producer.send(TOPIC + ":" + tag, event);
 
-            waitingMessage(subscriber);
+            waitingMessage(subscriber, 1);
 
             assertTrue(subscriber.getFailedTimes() >= 1);
             assertEquals(event, subscriber.getReceivedObject());
@@ -73,8 +71,8 @@ public class DomainEventPublishTest {
             producer.send(TOPIC + ":" + tag, event);
             producer.send(TOPIC + "1:" + tag, event);
 
-            waitingMessage(subscriber1);
-            waitingMessage(subscriber2);
+            waitingMessage(subscriber1, 1);
+            waitingMessage(subscriber2, 1);
 
             assertEquals(1, subscriber1.getReceivedCount());
             assertEquals(1, subscriber2.getReceivedCount());
@@ -112,8 +110,8 @@ public class DomainEventPublishTest {
             producer.send(TOPIC + ":" + tag1, event);
             producer.send(TOPIC + ":1" + tag1, event);
 
-            waitingMessage(subscriber1);
-            waitingMessage(subscriber2);
+            waitingMessage(subscriber1, 1);
+            waitingMessage(subscriber2, expectedCount);
 
             assertEquals(1, subscriber1.getReceivedCount());
             assertEquals(expectedCount, subscriber2.getReceivedCount());
@@ -135,8 +133,8 @@ public class DomainEventPublishTest {
             SampleDomainEvent event = getDomainEvent();
             producer.send(TOPIC + ":" + tag, event);
 
-            waitingMessage(subscriber1);
-            waitingMessage(subscriber2);
+            waitingMessage(subscriber1, 1);
+            waitingMessage(subscriber2, 1);
 
             assertEquals(1, subscriber1.getReceivedCount());
             assertEquals(1, subscriber2.getReceivedCount());
@@ -147,11 +145,11 @@ public class DomainEventPublishTest {
         }
     }
 
-    private void waitingMessage(DummySubscriber subscriber) throws InterruptedException {
+    private void waitingMessage(DummySubscriber subscriber, int minCount) throws InterruptedException {
         int i = 0;
         while (i <= 100) {
             i++;
-            if (subscriber.getReceivedCount() > 0) {
+            if (subscriber.getReceivedCount() >= minCount) {
                 break;
             }
             TimeUnit.MILLISECONDS.sleep(300);

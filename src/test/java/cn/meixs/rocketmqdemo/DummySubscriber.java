@@ -1,7 +1,5 @@
 package cn.meixs.rocketmqdemo;
 
-import cn.meixs.rocketmqdemo.domain.event.SampleDomainEvent;
-
 public class DummySubscriber implements Subscriber{
     private String topic;
     private String tags;
