@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo.core;
+package cn.meixs.rocketmqdemo.mq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo.core;
+package cn.meixs.rocketmqdemo.mq;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

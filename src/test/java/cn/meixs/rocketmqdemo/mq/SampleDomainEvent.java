@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo.core;
+package cn.meixs.rocketmqdemo.mq;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo.core;
+package cn.meixs.rocketmqdemo.mq;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;

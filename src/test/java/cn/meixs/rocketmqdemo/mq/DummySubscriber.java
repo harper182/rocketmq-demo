@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo.core;
+package cn.meixs.rocketmqdemo.mq;
 
 public class DummySubscriber implements RocketMQListener {
     private String topic;

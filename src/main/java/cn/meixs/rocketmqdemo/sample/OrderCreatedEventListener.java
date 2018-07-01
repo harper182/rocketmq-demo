@@ -1,7 +1,7 @@
 package cn.meixs.rocketmqdemo.sample;
 
-import cn.meixs.rocketmqdemo.core.RocketMQListener;
-import cn.meixs.rocketmqdemo.core.RocketMQMessageListener;
+import cn.meixs.rocketmqdemo.mq.RocketMQListener;
+import cn.meixs.rocketmqdemo.mq.RocketMQMessageListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
