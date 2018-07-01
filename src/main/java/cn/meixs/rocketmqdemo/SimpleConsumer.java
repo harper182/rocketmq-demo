@@ -11,28 +11,51 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.springframework.util.Assert;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class SimpleConsumer {
+    private static final String TAG_SEPARATOR_REGEX = "\\|\\|";
     private final String charset = "UTF-8";
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private DefaultMQPushConsumer consumer;
     private Object receivedObject;
+    private int count;
 
-    private Class messageType;
     private String group;
     private String namesrvAddr;
     private List<TopicInfo> topicInfos;
-    private int count;
+    private List<Subscriber> subscribers = new ArrayList<>();
 
-    public SimpleConsumer(Class messageType, String namesrvAddr, String group, List<TopicInfo> topicInfos) {
-        this.messageType = messageType;
+    public SimpleConsumer(String namesrvAddr, String group, List<Subscriber> subscribers) {
         this.group = group;
         this.namesrvAddr = namesrvAddr;
-        this.topicInfos = topicInfos;
+        this.subscribers = new ArrayList<>(subscribers);
+        initTopicInfos();
+    }
+
+    private void initTopicInfos() {
+        topicInfos = new ArrayList<>();
+        Map<String, Set<Set<String>>> topicMap = subscribers.stream().collect(
+                Collectors.groupingBy(Subscriber::getTopic,
+                        Collectors.mapping(Subscriber::getTags,
+                                Collectors.mapping(a -> Arrays.stream(a.split("\\|\\|"))
+                                        .collect(Collectors.toSet()), Collectors.toSet()))
+                ));
+        for (Map.Entry<String, Set<Set<String>>> entry : topicMap.entrySet()) {
+            Set<String> collect = entry.getValue().stream().flatMap(x -> x.stream()).collect(Collectors.toSet());
+            topicInfos.add(new TopicInfo(entry.getKey(), collect.stream().collect(Collectors.joining("||"))));
+        }
     }
 
     public synchronized void init() throws Exception {
@@ -61,13 +84,16 @@ public class SimpleConsumer {
         log.info("consumer destroyed, {}", this.toString());
     }
 
-    protected class DefaultMessageListenerConcurrently implements MessageListenerConcurrently {
+    List<TopicInfo> getTopicInfos() {
+        return topicInfos;
+    }
 
+    protected class DefaultMessageListenerConcurrently implements MessageListenerConcurrently {
         public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
             for (MessageExt messageExt : msgs) {
-                log.debug("received msg: {}", messageExt);
                 try {
-                    handleMessage(doConvertMessage(messageExt));
+                    log.debug("received messageExt:{}", messageExt);
+                    handleMessage(messageExt);
                 } catch (Exception e) {
                     log.error("consume message failed. messageExt:{}", messageExt, e);
                     return ConsumeConcurrentlyStatus.RECONSUME_LATER;
@@ -78,7 +104,44 @@ public class SimpleConsumer {
         }
     }
 
-    protected void handleMessage(Object object) {
+    private void handleMessage(MessageExt messageExt) {
+        for (Subscriber subscriber : subscribers) {
+            if (isMatch(subscriber, messageExt)) {
+                Object object = doConvertMessage(messageExt, subscriber.getMessageType());
+                subscriber.handle(object);
+
+                handleMessage2(object);
+            }
+        }
+    }
+
+    private boolean isMatch(Subscriber subscriber, MessageExt messageExt) {
+        if (subscriber.getTopic().equalsIgnoreCase(messageExt.getTopic())) {
+            String tags = messageExt.getTags();
+            if (Objects.nonNull(tags) && tags.length() > 0) {
+                Set<String> messageTags = new HashSet<>(Arrays.asList(messageExt.getTags().split(TAG_SEPARATOR_REGEX)));
+                Set<String> subscriberTags = new HashSet<>(Arrays.asList(subscriber.getTags().split(TAG_SEPARATOR_REGEX)));
+                subscriberTags.retainAll(messageTags);
+                return subscriberTags.size() > 0;
+            }
+        }
+
+        log.info("subscribe NOT match");
+        return false;
+    }
+
+    private boolean isTagMatch(Set<String> tags1, String tagString) {
+        Set<String> results = new HashSet<>(tags1);
+        results.retainAll(Arrays.asList(tagString.split(TAG_SEPARATOR_REGEX)));
+
+        return results.size() > 0;
+    }
+
+    private boolean isTopicMatch(String topic1, String topic2) {
+        return Objects.equals(topic1, topic2);
+    }
+
+    protected void handleMessage2(Object object) {
         this.receivedObject = object;
         this.count++;
     }
@@ -91,23 +154,21 @@ public class SimpleConsumer {
         return count;
     }
 
-    private Object doConvertMessage(MessageExt messageExt) {
-
+    private Object doConvertMessage(MessageExt messageExt, Class messageType) {
         if (Objects.equals(messageType, MessageExt.class)) {
             return messageExt;
-        } else {
-            String str = new String(messageExt.getBody(), Charset.forName(charset));
-            if (Objects.equals(messageType, String.class)) {
-                return str;
-            } else {
-                // if msgType not string, use objectMapper change it.
-                try {
-                    return objectMapper.readValue(str, messageType);
-                } catch (Exception e) {
-                    log.info("convert failed. str:{}, msgType:{}", str, messageType);
-                    throw new RuntimeException("cannot convert message to " + messageType, e);
-                }
-            }
+        }
+
+        String messageBody = new String(messageExt.getBody(), Charset.forName(charset));
+        if (Objects.equals(messageType, String.class)) {
+            return messageBody;
+        }
+
+        try {
+            return objectMapper.readValue(messageBody, messageType);
+        } catch (Exception e) {
+            log.error("convert message failed. msgType:{}, message:{}", messageType, messageBody);
+            throw new RuntimeException("cannot convert message to " + messageType, e);
         }
     }
 

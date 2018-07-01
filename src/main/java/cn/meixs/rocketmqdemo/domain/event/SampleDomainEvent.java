@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.domain.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +12,10 @@ import java.util.Date;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-class DomainEvent {
+public class SampleDomainEvent {
     private String id;
     private long quantity;
     private Date date;
     private BigDecimal price;
     private BusinessNo businessNo;
-
 }

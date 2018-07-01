@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.domain.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-class BusinessNo {
+public class BusinessNo {
     private String no;
 }

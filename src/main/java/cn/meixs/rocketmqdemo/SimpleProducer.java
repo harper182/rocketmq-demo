@@ -74,10 +74,10 @@ public class SimpleProducer extends AbstractMessageSendingTemplate<String> {
             org.apache.rocketmq.common.message.Message rocketMsg = convertToRocketMsg(destination, message);
             SendResult sendResult = producer.send(rocketMsg, timeout);
             long costTime = System.currentTimeMillis() - now;
-            log.debug("send message cost: {} ms, msg status: {}, msgId:{}", costTime, sendResult.getSendStatus(), sendResult.getMsgId());
+            log.debug("send message cost: {} ms, msg status: {}, msgId:{}, message: {}", costTime, sendResult.getSendStatus(), sendResult.getMsgId(), rocketMsg);
             return sendResult;
         } catch (Exception e) {
-            log.info("syncSend failed. destination:{}, message:{} ", destination, message);
+            log.error("syncSend failed. destination:{}, message:{} ", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
