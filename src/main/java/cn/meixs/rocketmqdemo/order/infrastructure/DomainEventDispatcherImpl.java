@@ -14,8 +14,6 @@ import java.util.List;
 
 @Service
 public class DomainEventDispatcherImpl implements DomainEventDispatcher {
-    private String namesrvAddr;
-    private String producerGroup;
     private DomainEventRepository repository;
     private SimpleProducer simpleProducer;
 
@@ -23,8 +21,6 @@ public class DomainEventDispatcherImpl implements DomainEventDispatcher {
     public DomainEventDispatcherImpl(DomainEventRepository repository,
                                      @Value("${rocketmq.name-server}") final String namesrvAddr,
                                      @Value("${rocketmq.producer.group}") final String producerGroup) {
-        this.namesrvAddr = namesrvAddr;
-        this.producerGroup = producerGroup;
         this.repository = repository;
         simpleProducer = new SimpleProducer(namesrvAddr, producerGroup);
         simpleProducer.init();
@@ -38,16 +34,17 @@ public class DomainEventDispatcherImpl implements DomainEventDispatcher {
     }
 
     @Override
-    public void dispatch(DomainEvent event) {
-        simpleProducer.send(event.getTopic() + ":" + event.getTag(), event);
-    }
-
     @Async
     public void dispatchEvents(List<DomainEvent> events) {
         //异步把消息发送出去
         for (DomainEvent event : events) {
             dispatch(event);
         }
+    }
+
+    private void dispatch(DomainEvent event) {
+        simpleProducer.send(event.getTopic() + ":" + event.getTag(), event);
+        repository.updateSentStatus(event);
     }
 
     @PreDestroy

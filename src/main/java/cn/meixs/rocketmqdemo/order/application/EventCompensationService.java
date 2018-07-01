@@ -18,13 +18,11 @@ public class EventCompensationService {
     }
 
     /**
-     * 定时触发，消息补偿
+     * 消息补偿
+     * todo: 定时触发
      */
     public void compensate() {
         List<DomainEvent> events = repository.findToBeSentEvents();
-        for (DomainEvent event : events) {
-            dispatcher.dispatch(event);
-            repository.updateSentStatus(event);
-        }
+        dispatcher.dispatchEvents(events);
     }
 }
