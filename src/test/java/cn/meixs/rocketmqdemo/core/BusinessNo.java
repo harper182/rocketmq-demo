@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.core;
 
 public class BusinessNo {
     private String no;

@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.core;
 
 import org.junit.Test;
 
@@ -62,8 +62,8 @@ public class DomainEventPublishTest {
     public void should_support_subscribe_multiple_topic() throws Exception {
         SimpleProducer producer = getSimpleProducer(GROUP);
         String tag = "should_support_subscribe_multiple_topic";
-        DummySubscriber subscriber1 = new DummySubscriber(TOPIC, tag);
-        DummySubscriber subscriber2 = new DummySubscriber(TOPIC+"1", tag);
+        DummySubscriber subscriber1 = new DummySubscriber(GROUP, TOPIC, tag);
+        DummySubscriber subscriber2 = new DummySubscriber(GROUP, TOPIC+"1", tag);
         consumer = new SimpleConsumer(NAMESRV_ADDR, GROUP, Arrays.asList(subscriber1, subscriber2));
         consumer.init();
         try {
@@ -101,8 +101,8 @@ public class DomainEventPublishTest {
 
     private void multiple_tag_test(String tag1, String tag2, int expectedCount) throws Exception {
         SimpleProducer producer = getSimpleProducer(GROUP);
-        DummySubscriber subscriber1 = new DummySubscriber(TOPIC, tag1);
-        DummySubscriber subscriber2 = new DummySubscriber(TOPIC, tag2);
+        DummySubscriber subscriber1 = new DummySubscriber(GROUP, TOPIC, tag1);
+        DummySubscriber subscriber2 = new DummySubscriber(GROUP, TOPIC, tag2);
         consumer = new SimpleConsumer(NAMESRV_ADDR, GROUP, Arrays.asList(subscriber2, subscriber1));
         consumer.init();
         try {
@@ -126,7 +126,7 @@ public class DomainEventPublishTest {
         SimpleProducer producer = getSimpleProducer(GROUP);
         String tag = "should_support_multiple_group_handle_same_topic";
         DummySubscriber subscriber1 = prepareConsumerAndSubscriber(GROUP, TOPIC, tag);
-        DummySubscriber subscriber2 = new DummySubscriber(TOPIC, tag);
+        DummySubscriber subscriber2 = new DummySubscriber(GROUP, TOPIC, tag);
         SimpleConsumer anotherConsumer = new SimpleConsumer(NAMESRV_ADDR, GROUP+"1", Arrays.asList(subscriber2));
         anotherConsumer.init();
         try {
@@ -161,7 +161,7 @@ public class DomainEventPublishTest {
     }
 
     private DummySubscriber prepareConsumerAndSubscriber(String group, String topic, String tags) throws Exception {
-        DummySubscriber subscriber = new DummySubscriber(topic, tags);
+        DummySubscriber subscriber = new DummySubscriber(GROUP, topic, tags);
 
         consumer = new SimpleConsumer(NAMESRV_ADDR, group, Arrays.asList(subscriber));
         consumer.init();
@@ -195,14 +195,14 @@ public class DomainEventPublishTest {
 
     @Test
     public void should_init_correct_topic_infos() throws Exception {
-        List<Subscriber> subscribers = Arrays.asList(
-                new DummySubscriber("topic1", "tag1"),
-                new DummySubscriber("topic1", "tag1"),
-                new DummySubscriber("topic2", "tag1"),
-                new DummySubscriber("topic2", "tag2"),
-                new DummySubscriber("topic3", "tag3||tag4"),
-                new DummySubscriber("topic3", "tag4||tag3"),
-                new DummySubscriber("topic3", "tag5")
+        List<RocketMQListener> subscribers = Arrays.asList(
+                new DummySubscriber(GROUP, "topic1", "tag1"),
+                new DummySubscriber(GROUP, "topic1", "tag1"),
+                new DummySubscriber(GROUP, "topic2", "tag1"),
+                new DummySubscriber(GROUP, "topic2", "tag2"),
+                new DummySubscriber(GROUP, "topic3", "tag3||tag4"),
+                new DummySubscriber(GROUP, "topic3", "tag4||tag3"),
+                new DummySubscriber(GROUP, "topic3", "tag5")
         );
 
         consumer = new SimpleConsumer("", "", subscribers);

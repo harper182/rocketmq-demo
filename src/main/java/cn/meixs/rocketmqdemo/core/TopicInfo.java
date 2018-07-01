@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.core;
 
 import java.util.Arrays;
 import java.util.Collections;

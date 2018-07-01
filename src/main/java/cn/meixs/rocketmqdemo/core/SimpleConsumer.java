@@ -1,4 +1,4 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -25,17 +25,14 @@ public class SimpleConsumer {
     private static final String TAG_SEPARATOR_REGEX = "\\|\\|";
     private final String charset = "UTF-8";
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private DefaultMQPushConsumer consumer;
-    private Object receivedObject;
-    private int count;
 
     private String group;
     private String namesrvAddr;
     private List<TopicInfo> topicInfos;
-    private List<Subscriber> subscribers = new ArrayList<>();
+    private List<RocketMQListener> subscribers = new ArrayList<>();
 
-    public SimpleConsumer(String namesrvAddr, String group, List<Subscriber> subscribers) {
+    public SimpleConsumer(String namesrvAddr, String group, List<RocketMQListener> subscribers) {
         this.group = group;
         this.namesrvAddr = namesrvAddr;
         this.subscribers = new ArrayList<>(subscribers);
@@ -45,8 +42,8 @@ public class SimpleConsumer {
     private void initTopicInfos() {
         topicInfos = new ArrayList<>();
         Map<String, Set<Set<String>>> topicMap = subscribers.stream().collect(
-                Collectors.groupingBy(Subscriber::getTopic,
-                        Collectors.mapping(Subscriber::getTags,
+                Collectors.groupingBy(RocketMQListener::getTopic,
+                        Collectors.mapping(RocketMQListener::getTags,
                                 Collectors.mapping(a -> Arrays.stream(a.split("\\|\\|"))
                                         .collect(Collectors.toSet()), Collectors.toSet()))
                 ));
@@ -102,18 +99,16 @@ public class SimpleConsumer {
         }
     }
 
-    private void handleMessage(MessageExt messageExt) {
-        for (Subscriber subscriber : subscribers) {
+    protected void handleMessage(MessageExt messageExt) {
+        for (RocketMQListener subscriber : subscribers) {
             if (isMatch(subscriber, messageExt)) {
                 Object object = doConvertMessage(messageExt, subscriber.getMessageType());
                 subscriber.handle(object);
-
-                handleMessage2(object);
             }
         }
     }
 
-    private boolean isMatch(Subscriber subscriber, MessageExt messageExt) {
+    protected boolean isMatch(RocketMQListener subscriber, MessageExt messageExt) {
         if (subscriber.getTopic().equalsIgnoreCase(messageExt.getTopic())) {
             String tags = messageExt.getTags();
             if (Objects.nonNull(tags) && tags.length() > 0) {
@@ -124,32 +119,7 @@ public class SimpleConsumer {
             }
         }
 
-        log.info("subscribe NOT match");
         return false;
-    }
-
-    private boolean isTagMatch(Set<String> tags1, String tagString) {
-        Set<String> results = new HashSet<>(tags1);
-        results.retainAll(Arrays.asList(tagString.split(TAG_SEPARATOR_REGEX)));
-
-        return results.size() > 0;
-    }
-
-    private boolean isTopicMatch(String topic1, String topic2) {
-        return Objects.equals(topic1, topic2);
-    }
-
-    protected void handleMessage2(Object object) {
-        this.receivedObject = object;
-        this.count++;
-    }
-
-    Object getReceivedObject() {
-        return receivedObject;
-    }
-
-    int getReceivedObjectCount() {
-        return count;
     }
 
     private Object doConvertMessage(MessageExt messageExt, Class messageType) {

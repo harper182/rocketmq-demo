@@ -1,8 +1,9 @@
-package cn.meixs.rocketmqdemo;
+package cn.meixs.rocketmqdemo.core;
 
-public class DummySubscriber implements Subscriber{
+public class DummySubscriber implements RocketMQListener {
     private String topic;
     private String tags;
+    private String consumerGroup;
 
     private Object receivedObject;
     private int receivedCount;
@@ -10,14 +11,20 @@ public class DummySubscriber implements Subscriber{
     private int failedTimes = 0;
     private boolean mockFail = false;
 
-    public DummySubscriber(String topic, String tags) {
+    public DummySubscriber(String consumerGroup, String topic, String tags) {
         this.topic = topic;
         this.tags = tags;
+        this.consumerGroup = consumerGroup;
     }
 
     @Override
     public Class getMessageType() {
         return SampleDomainEvent.class;
+    }
+
+    @Override
+    public String getGroup() {
+        return consumerGroup;
     }
 
     @Override
