@@ -43,6 +43,7 @@ public class DomainEventDispatcherImpl implements DomainEventDispatcher {
     }
 
     private void dispatch(DomainEvent event) {
+        System.out.println("sent msg :"+event.getTopic() +":"+event.getTag());
         simpleProducer.send(event.getTopic() + ":" + event.getTag(), event);
         repository.updateSentStatus(event);
     }

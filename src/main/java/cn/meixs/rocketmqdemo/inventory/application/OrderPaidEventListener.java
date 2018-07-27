@@ -38,6 +38,7 @@ public class OrderPaidEventListener implements RocketMQListener<OrderPaidEvent>{
 
     @Override
     public void handle(OrderPaidEvent message) {
+        System.out.println("listener triggered......");
         service.prepareInventory(message.getOrderId());
     }
 }
